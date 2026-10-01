@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#08020a" />
+  <title>For You ❤️</title>
+
+  <!--
+    FONTS (optional, needs internet the first time):
+    - Cormorant Garamond = elegant headings and body text
+    - Caveat             = handwriting used for the love letter
+    If the fonts can't load, the CSS falls back to Georgia / Segoe Script automatically.
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Shared heart artwork (gradient + gloss). Every big heart on the site uses <use href="#heart"> -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="heartGradient" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ff9ab0" />
+        <stop offset="0.45" stop-color="#e0214a" />
+        <stop offset="1" stop-color="#6e0d26" />
+      </linearGradient>
+    </defs>
+    <symbol id="heart" viewBox="0 0 24 24">
+      <path fill="url(#heartGradient)" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+      <ellipse cx="7.1" cy="7.2" rx="2.4" ry="1.25" transform="rotate(-35 7.1 7.2)" fill="#fff" opacity="0.32" />
+    </symbol>
+  </svg>
+
+  <!-- Background layers (darkening layer → hearts canvas → vignette) -->
+  <div class="bg-dim" aria-hidden="true"></div>
+  <canvas id="heartsCanvas" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <main id="stage">
+
+    <!-- ============================================================
+         STEP 0 — PASSWORD SCREEN
+         (The password itself lives in script.js → CONFIG.password)
+         ============================================================ -->
+    <section id="screen-password" class="screen is-active" aria-labelledby="pw-title">
+      <div class="card tilt glow-border" id="pw-card" data-tilt>
+        <div class="big-heart" id="pw-heart" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><use href="#heart" /></svg>
+        </div>
+
+        <h1 class="title" id="pw-title">This little secret is only for you ❤️</h1>
+        <p class="lead">Enter the password to continue...</p>
+
+        <div class="pw-field" id="pw-field">
+          <input
+            id="pw-input"
+            type="password"
+            placeholder="Enter password"
+            aria-label="Password"
+            aria-describedby="pw-msg"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+          />
+          <button type="button" id="pw-toggle" class="icon-btn" aria-label="Show password" aria-pressed="false">
+            <!-- eye (shown while the password is hidden) -->
+            <svg class="eye eye--open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <!-- eye with slash (shown while the password is visible) -->
+            <svg class="eye eye--off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z" />
+              <circle cx="12" cy="12" r="3" />
+              <line x1="3" y1="3" x2="21" y2="21" />
+            </svg>
+          </button>
+        </div>
+
+        <p class="msg" id="pw-msg" role="alert"></p>
+        <button type="button" class="btn" id="pw-submit">Unlock ❤️</button>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         STEP 1 — WELCOME SCREEN
+         ============================================================ -->
+    <section id="screen-welcome" class="screen" aria-labelledby="welcome-title">
+      <div class="card tilt glow-border" data-tilt>
+        <div class="big-heart big-heart--sm" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><use href="#heart" /></svg>
+        </div>
+        <h1 class="title" id="welcome-title">Before I tell you something...</h1>
+        <p class="lead lead--tight">You have to pass a little test first ❤️</p>
+        <button type="button" class="btn" id="start-btn" data-autofocus>Start Quiz ❤️</button>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         STEP 2 — QUIZ (questions are built from script.js → QUESTIONS)
+         ============================================================ -->
+    <section id="screen-quiz" class="screen" aria-label="Quiz">
+      <div class="card card--quiz tilt glow-border" data-tilt>
+        <div class="progress">
+          <p class="progress-text" id="progress-text">Question 1 of 10 ❤️</p>
+          <div class="bar" id="progress-bar" role="progressbar" aria-valuemin="1" aria-valuemax="10" aria-valuenow="1">
+            <span id="progress-fill"></span>
+          </div>
+        </div>
+
+        <div class="quiz-body" id="quiz-body">
+          <h2 class="question" id="question-text"></h2>
+          <div class="options" id="options" role="group" aria-labelledby="question-text"></div>
+        </div>
+
+        <p class="msg" id="quiz-msg" role="alert"></p>
+        <button type="button" class="btn" id="next-btn">Next ❤️</button>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         STEP 3 — "I LOVE YOU" REVEAL
+         ============================================================ -->
+    <section id="screen-reveal" class="screen" aria-live="polite">
+      <div class="reveal">
+        <p class="reveal-line" id="reveal-line"></p>
+        <h2 class="reveal-big" id="reveal-big" aria-label="I love you" hidden></h2>
+        <button type="button" class="btn btn--ghost reveal-btn" id="letter-btn" data-autofocus hidden>Read what I wrote for you 💌</button>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         STEP 4 — LOVE LETTER (text lives in script.js → LETTER)
+         ============================================================ -->
+    <section id="screen-letter" class="screen screen--letter" aria-label="Love letter">
+      <article class="love-letter" id="love-letter">
+        <div class="seal" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><use href="#heart" /></svg>
+        </div>
+        <div class="letter-body" id="letter-body"></div>
+      </article>
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
